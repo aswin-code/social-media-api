@@ -114,7 +114,7 @@ exports.sendOtp = async (req, res) => {
         const verifyOtp = new otpModel({
             email, otp
         })
-        nodemailer.sendOtp({ email, otp })
+        nodemailer.sendOtp(email, otp)
         await verifyOtp.save()
         res.status(200).json({ message: 'otp send successfully' })
 
