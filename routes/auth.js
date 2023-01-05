@@ -18,6 +18,6 @@ router.route('/otp')
 router.route('/refresh')
     .get(authController.refresh)
 router.route('/forget')
-    .post()
+    .post(authController.forgetPassword)
 
 module.exports = router
