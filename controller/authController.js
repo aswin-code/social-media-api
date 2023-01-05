@@ -23,7 +23,7 @@ exports.register = asyncHandler(async (req, res) => {
         const verifyOtp = new otpModel({
             email, otp
         })
-        nodemailer.sendOtp({ email, otp })
+        nodemailer.sendOtp(email, otp)
         await verifyOtp.save()
         res.status(201).json({ message: 'account created successfully verify your account' })
 
