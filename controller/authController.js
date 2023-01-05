@@ -192,6 +192,7 @@ exports.forgetPassword = async (req, res) => {
         const found = await otpModel.findOne({ email })
         if (!found) return res.status(404).json({ message: 'no user found' })
         if (found.otp !== otp) return res.status(400).json({ menubar: 'invalid otp' })
+        await otpModel.findOneAndDelete({ email })
         const hash = await bcrypt.hash(password, 10)
         const user = await userModel.findOne({ email })
         if (!user.verified) return res.status(401).json({ message: 'please verify your account to change password' })
