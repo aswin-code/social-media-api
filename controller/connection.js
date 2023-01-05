@@ -55,7 +55,7 @@ exports.getConnection = async (req, res) => {
         const connection = await connectionModel.findOne({ userid: req.params.id || req.user }).populate('followers', '-password -refreshToken -verified').populate('following', '-password -refreshToken -verified')
         const userConnections = await connectionModel.findOne({ userid: req.user })
         const followerList = connection.followers.map(e => {
-            if (userConnections.following.find(follow => follow == e)) {
+            if (userConnections.following.find(follow => follow == e._id)) {
                 return {
                     ...e,
                     following: true
