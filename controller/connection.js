@@ -64,7 +64,7 @@ exports.getConnection = async (req, res) => {
                 return e
             }
         })
-        res.status(200).json(connection, followerList)
+        res.status(200).json({ connection, followerList })
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: 'something went wrong ' })
