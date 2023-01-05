@@ -196,7 +196,7 @@ exports.forgetPassword = async (req, res) => {
         const hash = await bcrypt.hash(password, 10)
         const user = await userModel.findOne({ email })
         if (!user.verified) return res.status(401).json({ message: 'please verify your account to change password' })
-        await userModel.findByIdAndUpdate({ email }, { $set: { password: hash } })
+        await userModel.findOneAndUpdate({ email }, { $set: { password: hash } })
         res.status(201).json({ message: 'password updated successfully' })
 
     } catch (error) {
