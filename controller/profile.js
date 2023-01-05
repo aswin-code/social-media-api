@@ -13,7 +13,6 @@ exports.getProfile = async (req, res) => {
 
 exports.updateProfilePic = async (req, res) => {
     try {
-        console.log(req.file)
         const { name } = req.body
         const file = req.file
         if (!name && !file) return res.status(400).json({ message: 'atleast one field require username or profile ' })
