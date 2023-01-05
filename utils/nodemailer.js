@@ -20,13 +20,16 @@ exports.sendOtp = async (email, otp) => {
         }, (err, info) => {
             if (err) {
                 console.log(err)
+                throw new err
             } else {
                 console.log(info)
+                return info
             }
         })
 
 
     } catch (error) {
         console.log(error)
+        return error
     }
 }

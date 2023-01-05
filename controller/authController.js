@@ -6,25 +6,31 @@ const otpModel = require('../models/otpModel');
 const nodemailer = require('../utils/nodemailer')
 const jwtDecode = require('jwt-decode');
 const token = require('../utils/Token');
-const { findOneAndDelete } = require('../models/userModel');
 
 // register 
 exports.register = asyncHandler(async (req, res) => {
-    const { email, name, password } = req.body
-    if (!email || !password) return res.status(400).json({ message: 'All fields are required' })
-    const foundUser = await userModel.findOne({ email }).exec()
-    console.log(foundUser)
-    if (foundUser) return res.status(403).json({ message: 'User already exist' })
-    const hash = await bcrypt.hash(password, 10)
-    const newUser = new userModel({ email, password: hash, name })
-    await newUser.save()
+    try {
+        const { email, name, password } = req.body
+        if (!email || !password) return res.status(400).json({ message: 'All fields are required' })
+        const foundUser = await userModel.findOne({ email }).exec()
+        console.log(foundUser)
+        if (foundUser) return res.status(403).json({ message: 'User already exist' })
+        const hash = await bcrypt.hash(password, 10)
+        const newUser = new userModel({ email, password: hash, name })
+        await newUser.save()
+        await otpModel.findOneAndDelete({ email })
+        const otp = Math.floor(1000 + Math.random() * 9000)
+        const verifyOtp = new otpModel({
+            email, otp
+        })
+        nodemailer.sendOtp({ email, otp })
+        await verifyOtp.save()
+        res.status(201).json({ message: 'account created successfully verify your account' })
 
-    const accessToken = token.createAccessToken(newUser._id)
+    } catch (error) {
 
-    const refreshToken = token.createRefreshToken(newUser._id)
-    newUser.refreshToken = [...newUser.refreshToken, refreshToken]
-    await newUser.save();
-    res.status(201).json({ accessToken, refreshToken })
+    }
+
 
 })
 
@@ -106,12 +112,7 @@ exports.refresh = asyncHandler(async (req, res) => {
 exports.sendOtp = asyncHandler(async (req, res) => {
     const { email } = req.query;
     if (!email) return res.status(400).json({ message: 'All fields require' });
-    await otpModel.findOneAndDelete({ email })
-    const otp = Math.floor(1000 + Math.random() * 9000)
-    const verifyOtp = new otpModel({
-        email, otp
-    })
-    await verifyOtp.save()
+
     nodemailer.sendOtp(email, otp)
     res.status(200).json({ message: 'otp send successfully' })
 })
