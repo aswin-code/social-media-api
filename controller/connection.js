@@ -23,14 +23,10 @@ exports.follow = async (req, res) => {
         } else {
             const found = followconnection.following.find(e => e == userid)
             if (found) {
-                followconnection.following.remove(userid)
-                followerConnetion.followers.remove(req.user)
-                await followerConnetion.save()
-                await followconnection.save()
+                await connectionModel.findByIdAndUpdate({ userid: req.user }, { $set: { $pull: { following: userid } } })
+                await connectionModel.findByIdAndUpdate({ userid }, { $set: { $pull: { followers: req.userid } } })
                 return res.status(200).json({ message: 'unfollowed successfull' })
-
             } else {
-
                 followconnection.following.push(userid)
                 await followconnection.save()
                 if (!followerConnetion) {
