@@ -9,7 +9,7 @@ router.route('/:id')
     .get(userController.getAUser)
 
 router.route('/:id/follow')
-    .get(userController.getConnection)
+    .get(connectionController.getConnection)
     .post(connectionController.follow)
 router.route('/:id/post')
     .get(userController.getUserPost)
