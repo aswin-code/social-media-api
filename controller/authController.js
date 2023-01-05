@@ -63,12 +63,12 @@ exports.login = asyncHandler(async (req, res) => {
 // refresh token verification
 exports.refresh = asyncHandler(async (req, res) => {
 
-    const cookie = req.cookies;
+    const cookie = req?.headers?.referer;
     console.log(cookie)
 
     if (!cookie) return res.status(401).json({ message: "Unauthorized" })
 
-    const refreshToken = cookie.jwt;
+    const refreshToken = cookie;
     const foundUser = await userModel.findOne({ refreshToken: refreshToken }).exec();
     console.log(foundUser)
     if (!foundUser) {
@@ -97,18 +97,11 @@ exports.refresh = asyncHandler(async (req, res) => {
             return res.status(403).json({ message: 'forbidden' })
         }
         const newRefreshToken = token.createRefreshToken(foundUser._id)
-
         const accessToken = token.createAccessToken(foundUser._id)
         foundUser.refreshToken = [...newArray, newRefreshToken]
         await foundUser.save();
-        res.cookie('jwt', newRefreshToken, {
-            // httpOnly: true,
-            secure: true,
-            sameSite: 'none',
-            maxAge: 7 * 24 * 60 * 60 * 1000
-        }).json({ accessToken })
+        res.status(200).json({ accessToken, refreshToken: newRefreshToken })
     }))
-
 })
 
 
