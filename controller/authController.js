@@ -200,7 +200,7 @@ exports.forgetPassword = async (req, res) => {
         res.status(201).json({ message: 'password updated successfully' })
 
     } catch (error) {
-
+        console.log(error)
     }
 }
 
