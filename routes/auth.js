@@ -17,5 +17,7 @@ router.route('/otp')
 
 router.route('/refresh')
     .get(authController.refresh)
+router.route('/forget')
+    .post()
 
 module.exports = router

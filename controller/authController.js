@@ -183,6 +183,27 @@ exports.googleLogin = asyncHandler(async (req, res) => {
 
     }
 })
+
+
+exports.forgetPassword = async (req, res) => {
+    try {
+        const { otp, password, email } = req.body;
+
+        const found = await otpModel.findOne({ email })
+        if (!found) return res.status(404).json({ message: 'no user found' })
+        if (found.otp !== otp) return res.status(400).json({ menubar: 'invalid otp' })
+        const hash = await bcrypt.hash(password, 10)
+        const user = await userModel.findOne({ email })
+        if (!user.verified) return res.status(401).json({ message: 'please verify your account to change password' })
+        await userModel.findByIdAndUpdate({ email }, { $set: { password: hash } })
+        res.status(201).json({ message: 'password updated successfully' })
+
+    } catch (error) {
+
+    }
+}
+
+
 // logout
 
 exports.logout = asyncHandler(async (req, res) => {
