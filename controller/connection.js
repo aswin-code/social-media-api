@@ -34,11 +34,6 @@ exports.follow = async (req, res) => {
             }
         }
 
-
-
-
-
-
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: 'something went wrong' })
@@ -46,7 +41,7 @@ exports.follow = async (req, res) => {
 }
 exports.getConnection = async (req, res) => {
     try {
-        const connection = await connectionModel.findOne({ userid: req.params.id })
+        const connection = await connectionModel.findOne({ userid: req.params.id }).populate('followers')
         res.status(200).json(connection)
     } catch (error) {
         console.log(error)
