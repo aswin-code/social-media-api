@@ -53,7 +53,18 @@ exports.follow = async (req, res) => {
 exports.getConnection = async (req, res) => {
     try {
         const connection = await connectionModel.findOne({ userid: req.params.id || req.user }).populate('followers', '-password -refreshToken -verified').populate('following', '-password -refreshToken -verified')
-        res.status(200).json(connection)
+        const userConnections = await connectionModel.findOne({ userid: req.user })
+        const followerList = connection.followers.map(e => {
+            if (userConnections.following.find(follow => follow == e)) {
+                return {
+                    ...e,
+                    following: true
+                }
+            } else {
+                return e
+            }
+        })
+        res.status(200).json(connection, followerList)
     } catch (error) {
         console.log(error)
         res.status(500).json({ message: 'something went wrong ' })
