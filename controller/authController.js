@@ -35,6 +35,7 @@ exports.register = asyncHandler(async (req, res) => {
 })
 
 
+
 // login
 exports.login = asyncHandler(async (req, res) => {
     const { email, } = req.body;
@@ -46,7 +47,7 @@ exports.login = asyncHandler(async (req, res) => {
     if (!foundUser) return res.status(401).json({ message: 'Invalid Email or password' })
     const match = await bcrypt.compare(pass, foundUser.password)
     if (!match) return res.status(401).json({ message: 'Invalid Email or Password' })
-
+    if (!foundUser.verified) return res.status(401).json({ message: 'please verify your account' })
     const accessToken = token.createAccessToken(foundUser._id)
 
     const refreshToken = token.createRefreshToken(foundUser._id)
@@ -55,6 +56,8 @@ exports.login = asyncHandler(async (req, res) => {
     const user = await userModel.findById(foundUser._id).select('-password').select('-refreshToken')
     res.status(200).json({ accessToken, user, refreshToken })
 })
+
+
 
 
 // refresh token verification
@@ -107,28 +110,53 @@ exports.refresh = asyncHandler(async (req, res) => {
     }))
 
 })
-// otp 
 
-exports.sendOtp = asyncHandler(async (req, res) => {
-    const { email } = req.query;
-    if (!email) return res.status(400).json({ message: 'All fields require' });
 
-    nodemailer.sendOtp(email, otp)
-    res.status(200).json({ message: 'otp send successfully' })
-})
+exports.sendOtp = async (req, res) => {
+    try {
+        const { email } = req.query
+        if (!email) return res.status(400).json({ message: 'all fields required' })
+        await otpModel.findOneAndDelete({ email })
+        const otp = Math.floor(1000 + Math.random() * 9000)
+        const verifyOtp = new otpModel({
+            email, otp
+        })
+        nodemailer.sendOtp({ email, otp })
+        await verifyOtp.save()
+        res.status(200).json({ message: 'otp send successfully' })
+
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({ message: 'something went wrong' })
+
+    }
+}
+
+
+
 exports.verifyotp = async (req, res) => {
     try {
         const { otp, email } = req.body
         const found = await otpModel.findOne({ email })
         if (!found) return res.status(401).json({ message: 'something went wrong' })
         if (found.otp !== otp) return res.status(401).json({ message: 'invalid otp' });
+        await userModel.findOneAndUpdate({ email }, { $set: { verified: true } })
         await otpModel.findOneAndDelete({ email })
         res.status(200).json({ status: 'ok', message: "otp verified successfully", verified: true })
     } catch (error) {
         console.log(error)
     }
 }
+
+
+
+
 // login with googlr
+
+
+
+
+
 exports.googleLogin = asyncHandler(async (req, res) => {
     const credential = req.body.data.credential
     const { email, name } = jwtDecode(credential)
