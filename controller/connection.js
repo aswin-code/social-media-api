@@ -21,16 +21,27 @@ exports.follow = async (req, res) => {
                 return res.status(200).json({ message: 'followed user successfully' })
             }
         } else {
-            followconnection.following.push(userid)
-            await followconnection.save()
-            if (!followerConnetion) {
-                const newConnection = new connectionModel({ userid, followers: [req.user] })
-                await newConnection.save()
-                return res.status(200).json({ message: 'followed user successfully' })
-            } else {
-                followerConnetion.followers.push(req.user)
+            const found = followconnection.following.find(e => e == userid)
+            if (found) {
+                followconnection.remove(userid)
+                followerConnetion.remove(req.user)
                 await followerConnetion.save()
-                return res.status(200).json({ message: 'followed user successfully' })
+                await followconnection.save()
+                return res.status(200).json({ message: 'unfollowed successfull' })
+
+            } else {
+
+                followconnection.following.push(userid)
+                await followconnection.save()
+                if (!followerConnetion) {
+                    const newConnection = new connectionModel({ userid, followers: [req.user] })
+                    await newConnection.save()
+                    return res.status(200).json({ message: 'followed user successfully' })
+                } else {
+                    followerConnetion.followers.push(req.user)
+                    await followerConnetion.save()
+                    return res.status(200).json({ message: 'followed user successfully' })
+                }
             }
         }
 
