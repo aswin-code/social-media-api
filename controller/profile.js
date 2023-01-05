@@ -14,10 +14,21 @@ exports.getProfile = async (req, res) => {
 exports.updateProfilePic = async (req, res) => {
     try {
         console.log(req.file)
+        const { name } = req.body
         const file = req.file
+        if (!name && !file) return res.status(400).json({ message: 'atleast one field require username or profile ' })
+        if (file && !name) {
+            const result = await cloudinary.uploader.upload(file.path)
+            await userModel.findByIdAndUpdate(req.user, { $set: { profilePic: result.url } })
+            return res.status(201).json({ message: 'profile updated successfully' })
+        } else if (!file && name) {
+            await userModel.findByIdAndUpdate(req.user, { $set: { name } })
+            return res.status(201).json({ message: 'username updated successfully' })
+        }
         const result = await cloudinary.uploader.upload(file.path)
-        await userModel.findByIdAndUpdate(req.user, { $set: { profilePic: result.url } })
-        res.status(201).json({ message: 'profile updated successfully' })
+        await userModel.findByIdAndUpdate(req.user, { $set: { profilePic: result.url, name } })
+        res.status(201).json({ message: 'profile picture and username updated successfull' })
+
 
     } catch (error) {
         console.log(error)
