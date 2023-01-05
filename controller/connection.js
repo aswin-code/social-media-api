@@ -13,10 +13,10 @@ exports.follow = async (req, res) => {
             await newConnection.save()
         }
         if (!followerConnetion) {
-            const newConnection = new connectionModel({ userid, follower: [req.user] })
+            const newConnection = new connectionModel({ userid, followers: [req.user] })
             await newConnection.save()
         }
-        followerConnetion.follower.push(req.user)
+        followerConnetion.followers.push(req.user)
         followconnection.following.push(userid)
         await followconnection.save()
         await followerConnetion.save()
